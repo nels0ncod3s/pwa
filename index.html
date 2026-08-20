@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Counter PWA</title>
+  <meta name="theme-color" content="#4F46E5">
+  
+  <!-- Inline Web App Manifest -->
+  <link rel="manifest" href='data:application/manifest+json,{
+    "name": "Counter PWA",
+    "short_name": "Counter",
+    "start_url": ".",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#4F46E5",
+    "icons": [{
+      "src": "https://via.placeholder.com/192/4F46E5/ffffff?text=1",
+      "sizes": "192x192",
+      "type": "image/png"
+    }]
+  }'>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background-color: #f3f4f6;
+    }
+    .card {
+      background: white;
+      padding: 2.5rem;
+      border-radius: 1rem;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+    .count {
+      font-size: 5rem;
+      font-weight: 800;
+      color: #1f2937;
+      margin: 1rem 0;
+    }
+    button {
+      background-color: #4F46E5;
+      color: white;
+      border: none;
+      padding: 1rem 2rem;
+      font-size: 1.25rem;
+      font-weight: 600;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      transition: background-color 0.15s, transform 0.1s;
+    }
+    button:active {
+      transform: scale(0.96);
+      background-color: #4338CA;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <div class="count" id="count">0</div>
+    <button onclick="increment()">Click Me</button>
+  </div>
+
+  <script>
+    let count = 0;
+    function increment() {
+      count++;
+      document.getElementById('count').textContent = count;
+    }
+
+    // Register Service Worker for offline capability
+    if ('serviceWorker' in navigator) {
+      const swCode = `
+        const CACHE = 'counter-v1';
+        self.addEventListener('install', e => {
+          e.waitUntil(caches.open(CACHE).then(c => c.addAll(['./'])));
+        });
+        self.addEventListener('fetch', e => {
+          e.respondWith(caches.match(e.request).then(res => res || fetch(e.request)));
+        });
+      `;
+      const blob = new Blob([swCode], { type: 'application/javascript' });
+      navigator.serviceWorker.register(URL.createObjectURL(blob))
+        .catch(err => console.error('ServiceWorker error:', err));
+    }
+  </script>
+</body>
+</html>
